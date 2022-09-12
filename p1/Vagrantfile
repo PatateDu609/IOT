@@ -4,13 +4,23 @@ BOX = "generic/centos9s"
 MEMORY = 2048
 CPUS = 4
 
+PROVIDER = "virtualbox"
+
+SERVER_NAME = "server"
+WORKER_NAME = "worker"
+
 SERVER_IP = "192.168.42.110"
 SERVER_HOSTNAME = "gboucettS"
+PVT_KEY_PATH = ".vagrant/machines/#{SERVER_NAME}/#{PROVIDER}/private_key"
+SERVER_TOKEN_PATH = "/var/lib/rancher/k3s/server/node-token"
+SERVER_PUBLIC_TOKEN = "/home/vagrant/token"
 
 WORKER_IP = "192.168.42.111"
 WORKER_HOSTNAME = "gboucettSW"
 
 NET_NAME = "vboxnet0"
+
+GET_K3S = "https://get.k3s.io"
 
 Vagrant.configure("2") do |config|
 	# Common config for all VM
@@ -23,18 +33,56 @@ Vagrant.configure("2") do |config|
 
 	# Defining all VM
 
-	config.vm.define "server" do |server|
+	config.vm.define SERVER_NAME do |server|
 		server.vm.network "private_network", ip: SERVER_IP
 		server.vm.hostname = SERVER_HOSTNAME
+
+		server.vm.provision "shell" do |s|
+			s.env = {
+				"K3S_KUBECONFIG_MODE" => "644",
+				"INSTALL_K3S_EXEC" => "--flannel-iface eth1"
+			}
+			s.path = GET_K3S
+		end
+		server.vm.provision "shell" do |s|
+			s.args = [SERVER_TOKEN_PATH, SERVER_PUBLIC_TOKEN]
+			# s.privileged = true
+			s.inline = "cp $1 $2 ; chown vagrant:vagrant $2"
+		end
+		server.vm.provision "shell", inline: "firewall-cmd --add-port=6443/tcp"
 
 		server.vm.provider "virtualbox" do |vb|
 			vb.name = SERVER_HOSTNAME
 		end
 	end
 
-	config.vm.define "worker" do |worker|
+	config.vm.define WORKER_NAME do |worker|
 		worker.vm.network "private_network", ip: WORKER_IP
 		worker.vm.hostname = WORKER_HOSTNAME
+
+		worker.vm.provision "file", source: PVT_KEY_PATH, destination: "~/.pvt_key"
+		worker.vm.provision "shell" do |s|
+			s.name = "Get token"
+			s.env = {"SERVER_IP" => SERVER_IP}
+			s.privileged = false
+			s.inline = <<-SHELL
+			scp -i ~/.pvt_key \
+			-o UserKnownHostsFile=/dev/null \
+			-o StrictHostKeyChecking=no \
+			vagrant@$SERVER_IP:/home/vagrant/token /tmp/token
+			SHELL
+		end
+		worker.vm.provision "shell" do |s|
+			s.name = "K3S Worker Mode"
+			s.env = {
+				"GET_K3S" => GET_K3S,
+				"K3S_KUBECONFIG_MODE" => "644",
+				"K3S_URL" => "https://#{SERVER_IP}:6443",
+				"K3S_TOKEN_FILE" => "/tmp/token",
+				"INSTALL_K3S_EXEC" => "--flannel-iface eth1"
+			}
+			s.path = GET_K3S
+		end
 
 		worker.vm.provider "virtualbox" do |vb|
 			vb.name = WORKER_HOSTNAME
