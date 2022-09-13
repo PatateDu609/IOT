@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# This is CentOS 9 stream (it is apparently the new maintened lineup of versions)
+BOX = "generic/centos9s"
+
+MEMORY = 2048
+CPUS = 4
+
+NAME = "gboucettS"
+IP = "192.168.42.110"
+
+GET_K3S = "https://get.k3s.io"
+
+Vagrant.configure("2") do |config|
+	config.vm.box = BOX
+
+	config.vm.provider "virtualbox" do |vb|
+		vb.cpus = CPUS
+		vb.memory = MEMORY
+		vb.name = NAME
+	end
+
+	config.vm.hostname = NAME
+	config.vm.network "private_network", ip: IP
+
+	config.vm.provision "shell" do |s|
+		s.name = "k3s installation"
+		s.env = {
+			"K3S_KUBECONFIG_MODE" => "644",
+			"INSTALL_K3S_EXEC" => "--flannel-iface eth1"
+		}
+		s.path = GET_K3S
+	end
+
+	config.vm.synced_folder "conf/", "/srv/app-conf"
+	config.vm.provision "shell" do |s|
+		s.name = "Enable applications"
+		s.privileged = false
+		s.inline = <<-SHELL
+		for file in /srv/app-conf/*.yml; do
+			kubectl apply -f $file
+		done
+		SHELL
+	end
+end

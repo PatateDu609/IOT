@@ -1,3 +1,6 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
 # This is CentOS 9 stream (it is apparently the new maintened lineup of versions)
 BOX = "generic/centos9s"
 
@@ -17,8 +20,6 @@ SERVER_PUBLIC_TOKEN = "/home/vagrant/token"
 
 WORKER_IP = "192.168.42.111"
 WORKER_HOSTNAME = "gboucettSW"
-
-NET_NAME = "vboxnet0"
 
 GET_K3S = "https://get.k3s.io"
 
