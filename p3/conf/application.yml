@@ -5,7 +5,7 @@ metadata:
     app: p3-app
   name: p3-app
 spec:
-  project: default
+  project: p3-proj
   source:
     repoURL: https://github.com/PatateDu609/gboucett-iot-argocd.git
     targetRevision: main
