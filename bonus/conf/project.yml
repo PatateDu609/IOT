@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: bonus-proj
+  labels:
+    app: bonus-proj
+spec:
+  description: Our ArgoCD Project for the IOT project
+  sourceRepos:
+  - "https://github.com/PatateDu609/*"
+  destinations:
+  - namespace: dev
+    server: https://kubernetes.default.svc
+  orphanedResources:
+    warn: false

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    app: bonus-app
+  name: bonus-app
+spec:
+  project: bonus-proj
+  source:
+    repoURL: https://github.com/PatateDu609/gboucett-iot-argocd.git
+    targetRevision: main
+    path: manifest
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    automated:
+      prune: false
+      selfHeal: true
