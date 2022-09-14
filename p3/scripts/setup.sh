@@ -25,5 +25,5 @@ kubectl -n argocd patch secret argocd-secret \
     "admin.passwordMtime": "'$(date +%FT%T%Z)'"
   }}'
 
-# kubectl apply -n argocd -f ../conf/project.yml
+kubectl apply -n argocd -f ../conf/project.yml
 kubectl apply -n argocd -f ../conf/application.yml
