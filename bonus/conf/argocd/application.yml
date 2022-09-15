@@ -7,7 +7,7 @@ metadata:
 spec:
   project: bonus-proj
   source:
-    repoURL: https://github.com/PatateDu609/gboucett-iot-argocd.git
+    repoURL: http://192.168.42.110:8080/root/gboucett-iot-argocd.git
     targetRevision: main
     path: manifest
     directory:

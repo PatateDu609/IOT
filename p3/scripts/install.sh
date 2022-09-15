@@ -1,31 +1,33 @@
 #!/bin/bash
 
-echo "Looking for docker installation..."
-if [ ! command -v docker ]; then
-	curl https://get.docker.com/ | bash
-else
-	echo "Docker found!"
-fi
+export DEBIAN_FRONTEND=noninteractive
 
-echo "Looking for kubectl installation..."
-if [ ! command -v kubectl ]; then
-	curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-	curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+sudo apt update
+sudo apt install -y \
+	curl \
+	wget \
+	ca-certificates \
+	curl \
+	gnupg \
+	lsb-release
 
-	echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-	if [ $? -ne 0 ]; then
-		echo "Check failed."
-		exit 1
-	fi
+echo "Installing docker..."
 
-	sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-else
-	echo "kubectl found!"
-fi
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh ./get-docker.sh
 
-echo "Looking for k3d installation..."
-if [ ! command -v k3d ]; then
-	curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-else
-	echo "k3d found!"
-fi
+sudo groupadd docker
+sudo usermod -aG docker vagrant
+
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
+
+echo "Installing kubectl..."
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+echo "Installing k3d..."
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash

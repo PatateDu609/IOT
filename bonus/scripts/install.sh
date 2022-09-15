@@ -32,5 +32,5 @@ sudo apt-get install -y kubectl
 echo "Installing k3d..."
 curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
-echo "Installing helm..."
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+# echo "Installing helm..."
+# curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
