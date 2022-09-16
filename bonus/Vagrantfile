@@ -3,8 +3,8 @@
 
 BOX = "bento/ubuntu-22.04"
 
-MEMORY = 4096
-CPUS = 4
+MEMORY = 8192
+CPUS = 8
 HOSTNAME = "gitlab"
 
 IP = "192.168.42.110"
@@ -24,6 +24,11 @@ Vagrant.configure("2") do |config|
 	config.vm.provision "shell", path: "scripts/setup.sh", name: "Launching all services"
 	config.vm.synced_folder "conf/", "/srv/k3d/conf"
 
-	# TODO: add the following line to provision
-	# export KUBECONFIG=$(k3d kubeconfig merge cluster-gitlab --kubeconfig-switch-context)
+	config.vm.provision "shell", run: "never" do |sh|
+		sh.name = "gitlab-pwd"
+		sh.privileged = false
+		sh.inline = <<-SHELL
+		kubectl exec -n gitlab $(kubectl get pods -n gitlab -o name) -- cat /etc/gitlab/initial_root_password
+		SHELL
+	end
 end

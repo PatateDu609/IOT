@@ -12,18 +12,17 @@ kubectl create namespace dev
 echo "Namespaces created..."
 
 echo "Installing argocd..."
-kubectl apply -n argocd -f ../conf/argocd.yml
-kubectl wait --for=condition=Ready pods -n argocd --all
+kubectl apply -n argocd -f ../conf/argocd
 
-echo "Installing ingress..."
-kubectl apply -n argocd -f ../conf/ingress.yml
+echo "Waiting for argocd to entirely deploy"
+kubectl rollout status -n argocd deploy/argocd-server
 
-echo "Configuring argocd and adding application..."
+echo "Configuring argocd..."
 kubectl -n argocd patch secret argocd-secret \
   -p '{"stringData": {
     "admin.password": "$2a$12$H46eP2fOkSVRphN7f1aAN.R21GOuxyOfjKhnmqjF6BJp4oLGyX0T2",
     "admin.passwordMtime": "'$(date +%FT%T%Z)'"
   }}'
 
-kubectl apply -n argocd -f ../conf/project.yml
-kubectl apply -n argocd -f ../conf/application.yml
+echo "Adding an application..."
+kubectl apply -n argocd -f ../conf/app

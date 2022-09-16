@@ -7,7 +7,7 @@ metadata:
 spec:
   description: Our ArgoCD Project for the IOT project
   sourceRepos:
-  - "http://192.168.42.110:8080/*"
+  - "http://192.168.42.110:8080/root/*"
   destinations:
   - namespace: dev
     server: https://kubernetes.default.svc

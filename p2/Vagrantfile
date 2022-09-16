@@ -38,9 +38,8 @@ Vagrant.configure("2") do |config|
 		s.name = "Enable applications"
 		s.privileged = false
 		s.inline = <<-SHELL
-		for file in /srv/app-conf/*.yml; do
-			kubectl apply -f $file
-		done
+		sudo systemctl disable --now firewalld
+		kubectl apply -f /srv/app-conf/
 		SHELL
 	end
 end
